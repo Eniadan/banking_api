@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 from typing import List
 from datetime import datetime
 from fastapi import Depends, FastAPI, HTTPException
@@ -7,9 +9,11 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
 from sqlalchemy.exc import SQLAlchemyError
 
 
-
-DATABASE_URL = "postgresql+psycopg://postgres:patrician4268@localhost:5432/banking"
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+load_dotenv()
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL is not set in the environment variables.")
+engine = create_engine(DATABASE_URL)
 
 def get_db_session():
     db=Session(engine)
