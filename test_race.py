@@ -2,7 +2,7 @@ import requests
 from concurrent.futures import ThreadPoolExecutor
 
 ACCOUNT_ID=1
-WITHDRAW_AMOUNT=400
+WITHDRAW_AMOUNT=60
 URL=f"http://127.0.0.1:8000/accounts/{ACCOUNT_ID}/withdraw"
 
 def withdraw():

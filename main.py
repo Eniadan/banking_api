@@ -1,5 +1,3 @@
-import os
-from dotenv import load_dotenv
 from typing import List
 from datetime import datetime
 from fastapi import Depends, FastAPI, HTTPException
@@ -7,12 +5,13 @@ from pydantic import BaseModel,Field,ConfigDict
 from sqlalchemy import (create_engine, Integer, String, Float, DateTime, ForeignKey, select,update)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
 from sqlalchemy.exc import SQLAlchemyError
+import os
+from dotenv import load_dotenv
+
 
 
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL:
-    raise ValueError("DATABASE_URL is not set in the environment variables.")
 engine = create_engine(DATABASE_URL)
 
 def get_db_session():
@@ -27,9 +26,27 @@ class Base(DeclarativeBase):
 
 class UserDB(Base):
     __tablename__ = "users"
-    user_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String, nullable=False)
-    #email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    user_id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True
+    )
+    name: Mapped[str] = mapped_column(
+        String,
+        nullable=False
+    )
+
+    email: Mapped[str] = mapped_column(
+        String,
+        unique=True,
+        nullable=False
+    )
+
+    password_hash: Mapped[str] = mapped_column(
+        String,
+        nullable=False
+    )
+
 
 class AccountDB(Base):
     __tablename__ = "accounts"
@@ -57,7 +74,9 @@ class AccountCreate(BaseModel):
     user_id: int
 
 class User(BaseModel):
-    name:str=Field(min_length=1)
+    name: str = Field(min_length=1)
+    email: str
+    password: str = Field(min_length=8)
 
 class DepositRequest(BaseModel):
     amount: float=Field(gt=0, description="Amount to deposit, must be greater than zero")
@@ -139,8 +158,6 @@ def deposit(account_id: int, deposit: DepositRequest,db: Session = Depends(get_d
     db.commit()
     db.refresh(account)
     return account
-
-
 
 @app.post("/accounts/{account_id}/withdraw", response_model=Account)
 def withdraw(account_id: int, withdraw_request: WithdrawRequest,db: Session = Depends(get_db_session)):
