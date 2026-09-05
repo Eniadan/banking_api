@@ -1,7 +1,8 @@
-from sqlalchemy import create_engine,pool
+from sqlalchemy import create_engine, pool
 import os
 from dotenv import load_dotenv
-from main import Base
+from app.database.base import Base
+from app.models import UserDB, AccountDB, TransactionDB
 from logging.config import fileConfig
 from alembic import context
 
@@ -59,15 +60,12 @@ def run_migrations_online() -> None:
 
     In this scenario we need to create an Engine
     and associate a connection with the context.
-
     """
-    database_url=os.getenv("DATABASE_URL")
-    if not database_url:
-        raise ValueError("DATABASE_URL is not set in the environment variables.")
-    connectable = create_engine(DATABASE_URL,
-            poolclass=pool.NullPool,
-        )
 
+    connectable = create_engine(
+        DATABASE_URL,
+        poolclass=pool.NullPool,
+    )
     with connectable.connect() as connection:
         context.configure(
             connection=connection, target_metadata=target_metadata
